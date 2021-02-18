@@ -33,13 +33,16 @@ class RouteController extends Controller
         $cityB = $request->city_to;
 
         $airports = Airport::whereIn($column, [$cityA, $cityB])->get();
-        if ($airports->count() !== 2) {
+        if ($airports->count() < 2) {
             return response()->json(['error' => 'No Airport found in one of the cities'], 404);
         }
+        dd(Airport::select('city', 'country')->get());
         $sourceAirport = $airports[0];
         $destinationAirport = $airports[1];
         $said = $sourceAirport->airport_id;
         $daid = $destinationAirport->airport_id;
+
+        // Get all airports as collection
 
         $airportIdList = Airport::where('airport_id', '>', 0)->pluck('airport_id')->toArray();
         $datas = Route::select('source_airport_id', 'destination_airport_id', 'price')->take(10)->get();
@@ -89,6 +92,6 @@ class RouteController extends Controller
         // dd($stack);
         // return $stack;
 
-        return view('components.route', compact('sourceAirport', 'destinationAirport'));
+        return view('components.route', compact('results'));
     }
 }

@@ -36,7 +36,7 @@ class CreateUsersTable extends Migration
                     'user_name' => 'adminuser',
                     'email' => 'admin@user.com',
                     'email_verified_at' => $now,
-                    'password' => Hash::make('admin'),
+                    'password' => Hash::make('admin123'),
                     'type' => 'administrator',
                     'created_at' => $now,
                     'updated_at' => $now,

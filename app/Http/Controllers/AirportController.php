@@ -19,4 +19,9 @@ class AirportController extends Controller
 
         return $idList;
     }
+
+    public static function getAirportLocation()
+    {
+        $datas = Airport::select('city', 'country')->get();
+    }
 }
