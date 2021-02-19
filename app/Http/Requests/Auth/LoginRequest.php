@@ -43,7 +43,6 @@ class LoginRequest extends FormRequest
      */
     public function authenticate()
     {
-        var_dump('ovde');
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt($this->only('email', 'password'), $this->filled('remember'))) {

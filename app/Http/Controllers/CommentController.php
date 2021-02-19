@@ -88,7 +88,7 @@ class CommentController extends Controller
             Comment::where('id', $id)->update(array('description' => $request->text));
             $msg = 'Comment was updated.';
         } else {
-            $msg = 'Couldn\'t find comment with that ID.'
+            $msg = 'Couldn\'t find comment with that ID.';
         }
         return response()->json(['message' => $msg]);
     }
@@ -107,7 +107,7 @@ class CommentController extends Controller
             $comment->delete();
             $msg = 'Comment deleted successfully.';
         } else {
-            $msg = 'Couldn\'t find comment with that ID.'
+            $msg = 'Couldn\'t find comment with that ID.';
         }
         return response()->json(['message' => $msg]);
     }

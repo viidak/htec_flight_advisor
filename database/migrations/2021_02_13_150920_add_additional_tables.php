@@ -37,8 +37,9 @@ class AddAdditionalTables extends Migration
             Schema::create('airports', function (Blueprint $table) {
                 $table->integer('airport_id')->unsigned()->unique();
                 $table->string('name');
-                $table->string('city');
-                $table->string('country');
+                $table->integer('city_id')->unsigned();
+                $table->index('city_id');
+                $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
                 $table->char('iata', 3);
                 $table->char('icao', 4);
                 $table->decimal('latitude', 10, 6);
@@ -90,6 +91,11 @@ class AddAdditionalTables extends Migration
             $table->dropColumn('user_id');
             $table->dropForeign('comments_city_id_foreign');
             $table->dropIndex('comments_city_id_index');
+            $table->dropColumn('city_id');
+        });
+        Schema::table('airports', function (Blueprint $table) {
+            $table->dropForeign('airports_city_id_foreign');
+            $table->dropIndex('airports_city_id_index');
             $table->dropColumn('city_id');
         });
         Schema::table('routes', function (Blueprint $table) {
