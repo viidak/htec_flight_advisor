@@ -26,8 +26,6 @@ class AirportHelper
                 continue;
             } elseif (isset($fileRow[2]) && $fileRow[2] !== '' && isset($fileRow[3]) && $fileRow[3] !== '') {
                 $city = City::where('name', $fileRow[2])->where('country', $fileRow[3])->first();
-                // var_dump($city);
-                // dd($city);
                 if ($city === null) {
                     continue;
                 } else {

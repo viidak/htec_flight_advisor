@@ -51,4 +51,46 @@ class ImportController extends Controller
 
         return view('components.admin-action-page');
     }
+
+    public function importAirports(Request $request)
+    {
+        $request->validate([
+            'airports' => 'required|mimes:txt,csv,application/octet-stream,bin',
+        ]);
+
+        try {
+            $airports = $request->file('airports');
+            $nameA = 'airports' . '.' . $airports->getClientOriginalExtension();
+            $airports->storeAs('imports', $nameA);
+            AirportHelper::import($nameA);
+        } catch (\Exception $e) {
+            $e->getMessage();
+            return $e->getMessage();
+        }
+
+        unlink(storage_path('app/imports/'.$nameA));
+        $msg = "Airport file uploaded successfully";
+        return response()->json(['message' => $msg], 204);
+    }
+
+    public function importRoutes(Request $request)
+    {
+        $request->validate([
+            'routes' => 'required|mimes:txt,csv,application/octet-stream,bin',
+        ]);
+        try {
+            $routes = $request->file('routes');
+            $nameR = 'routes' . '.' . $routes->getClientOriginalExtension();
+            $routes->storeAs('imports', $nameR);
+            RouteHelper::import($nameR);
+        } catch (\Exception $e) {
+            var_dump($e->getMessage(),"except");
+            $e->getMessage();
+            return $e->getMessage();
+        }
+
+        unlink(storage_path('app/imports/'.$nameR));
+        $msg = "Route file uploaded successfully";
+        return response()->json(['message' => $msg], 204);
+    }
 }

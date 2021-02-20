@@ -41,15 +41,16 @@ class CommentController extends Controller
     {
         $request->validate([
             'new_comment' => 'required|string|max:255',
+            'city_id' => 'required|integer|numeric|min:1'
         ]);
 
         Comment::create([
             'description' => $request->new_comment,
-            'user_id' => $request->user_id,
+            'user_id' => auth()->user()->id,
             'city_id' => $request->city_id
         ]);
 
-        return response()->json(['message' => 'Comment added successfully']);
+        return response()->json(['message' => 'Comment added successfully'], 204);
     }
 
     /**
@@ -84,13 +85,20 @@ class CommentController extends Controller
     public function update(Request $request, $id)
     {
         $msg = '';
-        if(Comment::where('id', '=', $id)->exists()) {
-            Comment::where('id', $id)->update(array('description' => $request->text));
-            $msg = 'Comment was updated.';
+        $comment = Comment::find($id);
+        if($comment) {
+            if ($comment->user_id == auth()->user()->id) {
+                Comment::where('id', $id)->update(array('description' => $request->text));
+                $msg = 'Comment was updated.';
+                $code = 204;
+            }
+            $msg = 'Current user cannot edit this comment.';
+            $code = 401;
         } else {
             $msg = 'Couldn\'t find comment with that ID.';
+            $code = 404;
         }
-        return response()->json(['message' => $msg]);
+        return response()->json(['message' => $msg], $code);
     }
 
     /**
@@ -104,11 +112,18 @@ class CommentController extends Controller
         $msg = '';
         $comment = Comment::find($id);
         if ($comment) {
-            $comment->delete();
-            $msg = 'Comment deleted successfully.';
+            if ($comment->user_id == auth()->user()->id) {
+                $comment->delete();
+                $msg = 'Comment deleted successfully.';
+                $code = 204;
+            } else {
+                $msg = 'Current user cannot delete this comment.';
+                $code = 401;
+            }
         } else {
             $msg = 'Couldn\'t find comment with that ID.';
+            $code = 404;
         }
-        return response()->json(['message' => $msg]);
+        return response()->json(['message' => $msg], $code);
     }
 }

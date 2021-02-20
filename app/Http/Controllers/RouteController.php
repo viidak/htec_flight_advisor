@@ -23,10 +23,32 @@ class RouteController extends Controller
     public function search(Request $request)
     {
         $request->validate([
-            'city_from' => 'string|max:255|required',
-            'city_to' => 'string|max:255|required',
+            'city_from' => 'string|max:255|required|regex:/^[a-zA-Z]+$/u',
+            'city_to' => 'string|max:255|required|regex:/^[a-zA-Z]+$/u',
         ]);
 
+        $results = [];
+
+        return view('components.route', compact('results'));
+    }
+
+    /**
+     * Handle an incoming search route request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function findRoutes(Request $request)
+    {
+        $request->validate([
+            'city_from' => 'string|max:255|required|regex:/^[a-zA-Z]+$/u',
+            'city_to' => 'string|max:255|required|regex:/^[a-zA-Z]+$/u',
+        ]);
+
+        $results = [];
+
+        
         // Check if there are Airports in given cities
         $column = 'city';
         $cityA = $request->city_from;
@@ -69,6 +91,6 @@ class RouteController extends Controller
             }
         }
 
-        return view('components.route', compact('results'));
+        return response()->json($results, 200);
     }
 }
