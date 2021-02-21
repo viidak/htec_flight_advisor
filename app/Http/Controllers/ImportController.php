@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Providers\RouteServiceProvider;
 use App\Helpers\AirportHelper;
 use App\Helpers\RouteHelper;
+use Validator;
 
 class ImportController extends Controller
 {
@@ -54,10 +55,13 @@ class ImportController extends Controller
 
     public function importAirports(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), 
+        [ 
             'airports' => 'required|mimes:txt,csv,application/octet-stream,bin',
         ]);
-
+        if ($validator->fails()) {          
+            return response()->json(['error'=>$validator->errors()], 401);                        
+        }  
         try {
             $airports = $request->file('airports');
             $nameA = 'airports' . '.' . $airports->getClientOriginalExtension();
@@ -70,27 +74,29 @@ class ImportController extends Controller
 
         unlink(storage_path('app/imports/'.$nameA));
         $msg = "Airport file uploaded successfully";
-        return response()->json(['message' => $msg], 204);
+        return response()->json(['message' => $msg], 200);
     }
 
     public function importRoutes(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), 
+        [ 
             'routes' => 'required|mimes:txt,csv,application/octet-stream,bin',
         ]);
+        if ($validator->fails()) {          
+            return response()->json(['error'=>$validator->errors()], 401);                        
+        }  
         try {
             $routes = $request->file('routes');
             $nameR = 'routes' . '.' . $routes->getClientOriginalExtension();
             $routes->storeAs('imports', $nameR);
             RouteHelper::import($nameR);
         } catch (\Exception $e) {
-            var_dump($e->getMessage(),"except");
-            $e->getMessage();
-            return $e->getMessage();
+            return response()->json(['message' => $e->getMessage()], 300);
         }
 
         unlink(storage_path('app/imports/'.$nameR));
         $msg = "Route file uploaded successfully";
-        return response()->json(['message' => $msg], 204);
+        return response()->json(['message' => $msg], 200);
     }
 }

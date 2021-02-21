@@ -1,0 +1,773 @@
+---
+openapi: 3.0.0
+info:
+  title: Laravel OpenApi Demo Documentation
+  description: L5 Swagger OpenApi description
+  contact:
+    email: admin@admin.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: localhost:80
+  description: Demo API Server
+paths:
+  "/auth/login":
+    post:
+      tags:
+      - Auth
+      summary: Login User
+      description: Login User and get JWT
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  description: Users email
+                  example: bruce@totallynotbatman.com
+                  type: string
+                password:
+                  description: Users desired password
+                  example: batcave123
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  "/auth/register":
+    post:
+      tags:
+      - Auth
+      summary: Register User
+      description: Register New User
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - last_name
+                - user_name
+                - email
+                - password
+                - password_confirmation
+              properties:
+                name:
+                  description: Users first name
+                  type: string
+                  example: Bruce
+                last_name:
+                  description: Users last name
+                  example: Wayne
+                  type: string
+                user_name:
+                  description: Users desired username
+                  example: imbatman
+                  type: string
+                email:
+                  description: Users email
+                  example: bruce@totallynotbatman.com
+                  type: string
+                password:
+                  description: Users desired password
+                  example: batcave123
+                  type: string
+                password_confirmation:
+                  description: Confirm password
+                  example: batcave123
+                  type: string
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: User successfully registered
+                  user:
+                    properties:
+                      name:
+                        type: string
+                        example: Bruce
+                      last_name:
+                        type: string
+                        example: Wayne
+                      user_name:
+                        type: string
+                        example: imbatman
+                      email:
+                        type: string
+                        example: bruce@totallynotbatman.com
+                      id:
+                        type: integer
+                        example: 55
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  "/auth/logout":
+    post:
+      tags:
+      - Auth
+      summary: Logout
+      description: Logout current user
+      operationId: logout
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: User successfully signed out
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+  "/auth/refresh":
+    post:
+      tags:
+      - Auth
+      summary: Refresh JWT
+      description: Refresh JWT for logged in user
+      operationId: refresh
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+  "/auth/user-profile":
+    get:
+      tags:
+      - Auth
+      summary: User Profile
+      description: Get User Profile Data for authenticated user
+      operationId: user-profile
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/User"
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+          
+
+  "/v1/cities":
+    get:
+      tags:
+      - City
+      summary: Get All Cities
+      description: Get a list of all cities in the database
+      operationId: get-cities
+      parameters:
+        - name: numberOfComments
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The number of comments for the city.
+          example: 2
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/City"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+      - City
+      summary: Create City/Cities
+      description: Provide json array to post cities into db
+      operationId: post-cities
+      requestBody:
+        description: New comment information
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/CityNoComment"
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User is not Authorized"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                    example: No Data provided
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+  "/v1/cities/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: City ID
+      example: 3
+      required: true
+      schema:
+        type: integer
+    get:
+      tags:
+      - City
+      summary: Get City
+      description: Get City data by ID
+      operationId: get-city
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+      - City
+      summary: Update City
+      description: Update City Data by Id
+      operationId: update-city
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+      - City
+      summary: Delete City
+      description: Delete City from DB by its ID
+      operationId: delete-city
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Current user cannot delete this comment.
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+  "/v1/search-city":
+    get:
+      tags:
+      - City
+      summary: Search Cities
+      description: Search all cities by name
+      operationId: search-cities
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The name of the city.
+          example: Amsterdam
+        - name: numberOfComments
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The number of comments for the city.
+          example: 2
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/City"
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: The given data was invalid.
+                  errors:
+                    type: object
+                    properties:
+                      text:
+                        type: array
+                        items:
+                          type: string
+                          example: The text field is required. 
+      security:
+        - bearerAuth: []
+          
+  "/v1/import-airports":
+    post:
+      tags:
+      - Import
+      summary: Import Airports
+      description: Import CSV or TXT file with airports data
+      operationId: import-airports
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                airports:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Airport file uploaded successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      routes:
+                        type: array
+                        items:
+                          type: string
+                          example: The airports field is required.
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+  "/v1/import-routes":
+    post:
+      tags:
+      - Import
+      summary: Import Routes
+      description: Import CSV or TXT file with air traffic routes data
+      operationId: import-routes
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                routes:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Route file uploaded successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      routes:
+                        type: array
+                        items:
+                          type: string
+                          example: The routes field is required.
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+          
+  "/v1/find-routes":
+    get:
+      tags:
+      - Search
+      summary: Find Routes
+      description: Find all routes between two cities
+      operationId: find-routes
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+          
+  "/v1/comment":
+    get:
+      tags:
+      - Comment
+      summary: Get All Comments
+      description: Get a list of all comments in the database
+      operationId: get-comments
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Comments"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+      - Comment
+      summary: Create Comment
+      description: Provide json to create a comment for a city
+      operationId: post-comments
+      requestBody:
+        description: New comment information
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_comment:
+                  type: string
+                city_id:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                properties:
+                  description:
+                    type: string
+                    example: This is a comment
+                  user_id:
+                    type: integer
+                    example: 2
+                  city_id:
+                    type: integer
+                    example: 3
+                  id:
+                    type: integer
+                    example: 12
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                    example: No City record with given city ID
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: The given data was invalid.
+                  errors:
+                    type: object
+                    properties:
+                      new_comment:
+                        type: array
+                        items:
+                          type: string
+                          example: The new_comment field is required. 
+      security:
+        - bearerAuth: []
+  "/v1/comment/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Comment ID
+      example: 2
+      required: true
+      schema:
+        type: integer
+    get:
+      tags:
+      - Comment
+      summary: Get comment
+      description: Get comment data by ID
+      operationId: get-comment
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    example: 12
+                  user_id:
+                    type: integer
+                    example: 2
+                  city_id:
+                    type: integer
+                    example: 3
+                  description:
+                    type: string
+                    example: This is a comment
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+      - Comment
+      summary: Update comment
+      description: Update comment Data by Id
+      operationId: update-comment
+      requestBody:
+        description: New comment information
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Current user cannot edit this comment.
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: The given data was invalid.
+                  errors:
+                    type: object
+                    properties:
+                      text:
+                        type: array
+                        items:
+                          type: string
+                          example: The text field is required. 
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+      - Comment
+      summary: Delete comment
+      description: Delete comment from DB by its ID
+      operationId: delete-comment
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: Current user cannot delete this comment.
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+          
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Comments:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        user_id:
+          type: integer
+          example: 2
+        city_id:
+          type: integer
+          example: 3
+        description:
+          type: string
+          example: This is a comment
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        name:
+          type: integer
+          example: Belgrade
+        country:
+          type: integer
+          example: Serbia
+        description:
+          type: string
+          example: This is a description
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comments"
+    CityNoComment:
+      type: object
+      required:
+        - name
+        - country
+        - description
+      properties:
+        name:
+          type: integer
+          example: Belgrade
+        country:
+          type: integer
+          example: Serbia
+        description:
+          type: string
+          example: This is a description
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3RcL2FwaVwvYXV0aFwvcmVmcmVzaCIsImlhdCI6MTYxMzk0MzAxMywiZXhwIjoxNjEzOTQ4MDU0LCJuYmYiOjE2MTM5NDQ0NTQsImp0aSI6Ikh4UHY1Sk9yYnpNUlFCM2giLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.Wly33bsJ5YW_IsgMmB3uJ2dzNHM8BueOqVVIE6H21TI"
+        token_type:
+          type: string
+          example: "bearer"
+        expires_in:
+          type: integer
+          example: 3600
+        user:
+          $ref: "#/components/schemas/User"
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: integer
+        last_name:
+          type: integer
+        user_name:
+          type: string
+        email:
+          type: string
+        email_verified_at:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum: [administrator, regular]

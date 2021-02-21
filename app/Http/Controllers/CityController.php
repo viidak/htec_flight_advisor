@@ -121,6 +121,11 @@ class CityController extends Controller
     public function store(Request $request)
     {
         $dataArray = $request->json()->all();
+        
+        if (empty($dataArray)) {
+            return response()->json(["error" => "No Data provided"], 404);
+        }
+
         $request->validate([
             '*.name' => 'required|string|max:255',
             '*.country' => 'required|string|max:255',

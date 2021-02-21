@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Comment;
+use App\Models\City;
 
 class CommentController extends Controller
 {
@@ -18,7 +19,7 @@ class CommentController extends Controller
      */
     public function index()
     {
-        //
+        return Comment::all();
     }
 
     /**
@@ -44,13 +45,17 @@ class CommentController extends Controller
             'city_id' => 'required|integer|numeric|min:1'
         ]);
 
-        Comment::create([
-            'description' => $request->new_comment,
-            'user_id' => auth()->user()->id,
-            'city_id' => $request->city_id
-        ]);
+        if (City::where('id', $request->city_id)->exists())
+        {
+            $comment = Comment::create([
+                'description' => $request->new_comment,
+                'user_id' => auth()->user()->id,
+                'city_id' => $request->city_id
+            ]);
 
-        return response()->json(['message' => 'Comment added successfully'], 204);
+            return $comment;
+        }
+        return response()->json(['error' => 'No City record with given city ID'], 404);
     }
 
     /**
@@ -59,9 +64,9 @@ class CommentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Comment $comment)
     {
-        //
+        return $comment;
     }
 
     /**
@@ -84,6 +89,9 @@ class CommentController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'text' => 'required|string|max:255',
+        ]);
         $msg = '';
         $comment = Comment::find($id);
         if($comment) {
@@ -91,9 +99,10 @@ class CommentController extends Controller
                 Comment::where('id', $id)->update(array('description' => $request->text));
                 $msg = 'Comment was updated.';
                 $code = 204;
+            } else {
+                $msg = 'Current user cannot edit this comment.';
+                $code = 401;
             }
-            $msg = 'Current user cannot edit this comment.';
-            $code = 401;
         } else {
             $msg = 'Couldn\'t find comment with that ID.';
             $code = 404;
@@ -111,18 +120,13 @@ class CommentController extends Controller
     {
         $msg = '';
         $comment = Comment::find($id);
-        if ($comment) {
-            if ($comment->user_id == auth()->user()->id) {
-                $comment->delete();
-                $msg = 'Comment deleted successfully.';
-                $code = 204;
-            } else {
-                $msg = 'Current user cannot delete this comment.';
-                $code = 401;
-            }
+        if ($comment->user_id == auth()->user()->id) {
+            $comment->delete();
+            $msg = 'Comment deleted successfully.';
+            $code = 204;
         } else {
-            $msg = 'Couldn\'t find comment with that ID.';
-            $code = 404;
+            $msg = 'Current user cannot delete this comment.';
+            $code = 401;
         }
         return response()->json(['message' => $msg], $code);
     }
