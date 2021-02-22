@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Airport;
 use App\Models\Route;
+use App\Helpers\RouteHelper;
 
 class RouteController extends Controller
 {
@@ -42,24 +43,13 @@ class RouteController extends Controller
     public function findRoutes(Request $request)
     {
         $request->validate([
-            // 'city_from' => 'string|max:255|required|regex:/^[a-zA-Z]+$/u',
-            // 'city_to' => 'string|max:255|required|regex:/^[a-zA-Z]+$/u',
             'city_to_id' => 'required|numeric|min:1',
             'city_from_id' => 'required|numeric|min:1',
         ]);
 
         $results = [];
 
-        
-        // Check if there are Airports in given cities
-        // $column = 'city';
-        // $cityA = $request->city_from;
-        // $cityB = $request->city_to;
-
-        // $startAirports = Airport::where($column, $cityA)->get();
-        // $endAirports = Airport::where($column, $cityB)->get();
-
-        $column = 'airport_id';
+        $column = 'city_id';
         $startAirports = Airport::where($column, $request->city_from_id)->get();
         $endAirports = Airport::where($column, $request->city_to_id)->get();
         
@@ -148,5 +138,87 @@ class RouteController extends Controller
         dd($routes, $second);
 
         return response()->json($results, 200);
+    }
+
+    /**
+     * Handle an incoming search route request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function findDirect(Request $request)
+    {
+        $request->validate([
+            'city_to_id' => 'required|numeric|min:1',
+            'city_from_id' => 'required|numeric|min:1',
+        ]);
+
+        $results = [];
+
+        $column = 'city_id';
+        $startAirports = Airport::where($column, $request->city_from_id)->with('startRoutes')->get();
+        $endAirports = Airport::where($column, $request->city_to_id)->with('endRoutes')->get();
+
+        if (!$startAirports || !$endAirports)
+        {
+            return response()->json(['error' => 'No Airport found in one of the cities'], 404);
+        }
+
+        $directRoutes = [];
+        foreach ($startAirports as $startAirport)
+        {
+            foreach ($endAirports as $endAirport)
+            {
+                $directRoutes = $this->routeRunner($startAirport->startRoutes, $endAirport->endRoutes);
+            }
+        }
+
+        return $this->formatData($directRoutes);
+    }
+
+    private function routeRunner($startRoutes, $endRoutes)
+    {
+        $allRoutes = Route::all();
+        $allRoutes = $allRoutes->keyBy('route_id');
+        $directRoutes = [];
+
+        foreach ($startRoutes as $startRoute)
+        {
+            foreach ($endRoutes as $endRoute)
+            {
+                if ($startRoute->route_id == $endRoute->route_id)
+                {
+                    $directRoutes[] = $startRoute;
+                }
+            }
+        }
+        return $directRoutes;
+    }
+
+    private function formatData($routes)
+    {
+        $data = [];
+        foreach ($routes as $route)
+        {
+            $startA = Airport::where('airport_id', $route->source_airport_id)->with('city')->first();
+            $endA = Airport::where('airport_id', $route->destination_airport_id)->with('city')->first();
+
+            $distance = RouteHelper::vincentyGreatCircleDistance(
+                $startA->latitude,
+                $startA->longitude,
+                $endA->latitude,
+                $endA->longitude
+            );
+
+            $data[] = [
+                'source_city' => $startA->city->name,
+                'destination_city' => $endA->city->name,
+                'price' => $route->price,
+                'distance' => round($distance, 0) . ' km'
+            ];
+        }
+
+        return $data;
     }
 }

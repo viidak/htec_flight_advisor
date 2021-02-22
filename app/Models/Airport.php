@@ -19,4 +19,9 @@ class Airport extends Model
     {
         return $this->hasMany('App\Models\Route','destination_airport_id', 'airport_id');
     }
+
+    public function city()
+    {
+        return $this->belongsTo('App\Models\City', 'city_id');
+    }
 }

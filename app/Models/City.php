@@ -25,4 +25,9 @@ class City extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function airports()
+    {
+        return $this->hasMany('App\Models\Airport', 'city_id', 'airport_id');
+    }
 }
