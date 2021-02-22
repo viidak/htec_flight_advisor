@@ -24,6 +24,11 @@ If you get a memory limit error, run the command as:
 COMPOSER_MEMORY_LIMIT=-1 composer require laravel/sail --dev
 ```
 
+Generate a secret key for JWT auth
+```bash
+php artisan jwt:secret
+```
+
 ## Running in Docker
 The service can also be run completely in Docker by running
 ```bash

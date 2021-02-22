@@ -98,7 +98,7 @@ class CommentController extends Controller
             if ($comment->user_id == auth()->user()->id) {
                 Comment::where('id', $id)->update(array('description' => $request->text));
                 $msg = 'Comment was updated.';
-                $code = 204;
+                $code = 200;
             } else {
                 $msg = 'Current user cannot edit this comment.';
                 $code = 401;
@@ -123,7 +123,7 @@ class CommentController extends Controller
         if ($comment->user_id == auth()->user()->id) {
             $comment->delete();
             $msg = 'Comment deleted successfully.';
-            $code = 204;
+            $code = 200;
         } else {
             $msg = 'Current user cannot delete this comment.';
             $code = 401;

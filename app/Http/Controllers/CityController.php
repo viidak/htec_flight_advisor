@@ -153,6 +153,6 @@ class CityController extends Controller
     {
         $city->delete();
         $msg = 'City deleted successfully';
-        return response()->json(['message' => $msg], 204);
+        return response()->json(['message' => $msg], 200);
     }
 }

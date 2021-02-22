@@ -52,4 +52,6 @@ Route::group([
     Route::resource('comment', CommentController::class);
 
     Route::get( 'find-routes', [RouteController::class, 'findRoutes']);
+    Route::get( 'find-direct', [RouteController::class, 'findDirect']);
+    Route::get( 'find-layover', [RouteController::class, 'findLayover']);
 });
