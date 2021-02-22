@@ -51,3 +51,9 @@ admin:
 regular:
 - email: regular@user.com
 - password: regular
+
+
+## Known Issues
+ - web and api guards are not set up to work at the same time. Right now only API endpoints are working, no UI login
+ - problems setting up swagger-ui . API documentation can be found in 'swagger.yml'
+ - All routes search not working, only direct route search works
